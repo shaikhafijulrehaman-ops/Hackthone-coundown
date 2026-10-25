@@ -1,0 +1,376 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ice-bg: #F4F8FC;
+  --ice-surface: #DCE8F5;
+  --ice-accent: #8EB8E8;
+  --ice-primary: #3879C9;
+  --ice-text: #182A43;
+  --ice-text-secondary: #3E577A;
+  --ice-text-muted: #6B85A8;
+  --ice-border: rgba(142, 184, 232, 0.55);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    background-color: #F4F8FC;
+    color: #182A43;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ========================================================= */
+/* ICE GLASS GLOBAL GLASSMORPHISM PANELS                     */
+/* ========================================================= */
+
+.glass-panel {
+  background: rgba(244, 248, 252, 0.55);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  border: 1px solid rgba(142, 184, 232, 0.55);
+  box-shadow: 
+    0 10px 30px rgba(56, 121, 201, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.glass-panel-cyan, .glass-panel-blue {
+  background: rgba(220, 232, 245, 0.65);
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  border: 1px solid rgba(56, 121, 201, 0.45);
+  box-shadow: 
+    0 10px 35px rgba(56, 121, 201, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90);
+}
+
+.glass-panel-amber {
+  background: rgba(254, 249, 238, 0.75);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(230, 138, 0, 0.45);
+  box-shadow: 
+    0 10px 35px rgba(230, 138, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90);
+}
+
+.glass-panel-red {
+  background: rgba(254, 242, 244, 0.78);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(217, 56, 72, 0.50);
+  box-shadow: 
+    0 10px 35px rgba(217, 56, 72, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90);
+}
+
+/* Glowing text classes in Ice Glass palette */
+.text-glow-cyan, .text-glow-blue {
+  text-shadow: 0 0 14px rgba(56, 121, 201, 0.35);
+}
+
+.text-glow-teal, .text-glow-accent {
+  text-shadow: 0 0 14px rgba(142, 184, 232, 0.45);
+}
+
+.text-glow-amber {
+  text-shadow: 0 0 14px rgba(230, 138, 0, 0.45);
+}
+
+.text-glow-red {
+  text-shadow: 0 0 16px rgba(217, 56, 72, 0.50);
+}
+
+/* Ice Grid overlay background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(to right, rgba(56, 121, 201, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 121, 201, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Corner bracket ornaments */
+.corner-bracket {
+  position: relative;
+}
+.corner-bracket::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid #3879C9;
+  border-left: 2px solid #3879C9;
+  pointer-events: none;
+}
+.corner-bracket::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-bottom: 2px solid #3879C9;
+  border-right: 2px solid #3879C9;
+  pointer-events: none;
+}
+
+/* ========================================================= */
+/* ANIMATED MOVING ICE-BLUE GRADIENT PERIMETER BORDER        */
+/* Coordinated blue gradient using #DCE8F5, #8EB8E8, #3879C9 */
+/* ========================================================= */
+
+.animated-glass-border-container {
+  position: relative;
+  border-radius: 38px;
+  overflow: visible;
+  box-shadow: 0 14px 40px rgba(56, 121, 201, 0.12);
+}
+
+.animated-glass-border-container::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 39.5px;
+  padding: 1.5px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(142, 184, 232, 0.75) 25%,
+    rgba(56, 121, 201, 0.90) 50%,
+    transparent 75%,
+    rgba(142, 184, 232, 0.75) 100%
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: borderRotate 6s linear infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.animated-glass-border-container.border-amber::before {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(230, 138, 0, 0.75) 25%,
+    rgba(255, 181, 46, 0.90) 50%,
+    transparent 75%,
+    rgba(230, 138, 0, 0.75) 100%
+  );
+}
+
+.animated-glass-border-container.border-red::before {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(217, 56, 72, 0.80) 25%,
+    rgba(255, 90, 110, 0.95) 50%,
+    transparent 75%,
+    rgba(217, 56, 72, 0.80) 100%
+  );
+}
+
+@keyframes borderRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-glass-border-container::before {
+    animation: none !important;
+  }
+}
+
+/* ========================================================= */
+/* MAIN STAGE ICE GLASS PANEL (Crystal Ultra-Transparent)    */
+/* Background building is 100% clearly visible through glass */
+/* ========================================================= */
+
+.timer-glass,
+.main-stage-glass-panel {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(224, 240, 255, 0.02) 42%,
+    rgba(244, 248, 252, 0.04) 100%
+  );
+  backdrop-filter: blur(2px) saturate(110%);
+  -webkit-backdrop-filter: blur(2px) saturate(110%);
+  border: 1.5px solid rgba(255, 255, 255, 0.80);
+  border-radius: 38px;
+  box-shadow: 
+    0 16px 45px rgba(56, 121, 201, 0.08),
+    0 0 25px rgba(142, 184, 232, 0.15),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.90),
+    inset 0 -1.5px 2px rgba(142, 184, 232, 0.20),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.30);
+}
+
+/* Authentic Image-2 Gradient Digits */
+.timer-digit-gradient {
+  background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 50%, #0F172A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.35));
+}
+
+.timer-digit-gradient-amber {
+  background: linear-gradient(180deg, #FBBF24 0%, #D97706 50%, #78350F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 16px rgba(245, 158, 11, 0.40));
+}
+
+.timer-digit-gradient-red {
+  background: linear-gradient(180deg, #F87171 0%, #DC2626 50%, #450A0A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 16px rgba(220, 38, 38, 0.45));
+}
+
+.main-stage-glass-panel-amber {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(
+    135deg, 
+    rgba(255, 255, 255, 0.55) 0%, 
+    rgba(254, 249, 238, 0.45) 50%, 
+    rgba(255, 235, 195, 0.40) 100%
+  );
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  border: 1.5px solid rgba(230, 138, 0, 0.45);
+  border-radius: 25px;
+  box-shadow: 
+    0 16px 45px rgba(230, 138, 0, 0.12),
+    inset 0 1px 2px rgba(255, 255, 255, 0.95);
+}
+
+.main-stage-glass-panel-red {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(
+    135deg, 
+    rgba(255, 255, 255, 0.55) 0%, 
+    rgba(254, 242, 244, 0.45) 50%, 
+    rgba(255, 215, 220, 0.40) 100%
+  );
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  border: 1.5px solid rgba(217, 56, 72, 0.50);
+  border-radius: 25px;
+  box-shadow: 
+    0 16px 45px rgba(217, 56, 72, 0.14),
+    inset 0 1px 2px rgba(255, 255, 255, 0.95);
+}
+
+/* ========================================================= */
+/* INVISIBLE DIGIT VIEWPORT & VERTICAL FALLING ANIMATION     */
+/* ========================================================= */
+
+.digit-viewport {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  user-select: none;
+  line-height: 1;
+}
+
+/* Outgoing digit falls vertically downward and fades out */
+.digit-fall-exit {
+  animation: digitFallExit 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Incoming digit enters from above and settles vertically */
+.digit-fall-enter {
+  animation: digitFallEnter 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  will-change: transform, opacity;
+}
+
+@keyframes digitFallExit {
+  0% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(125%);
+    opacity: 0;
+  }
+}
+
+@keyframes digitFallEnter {
+  0% {
+    transform: translateY(-125%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+/* Reduced motion preference override */
+@media (prefers-reduced-motion: reduce) {
+  .digit-fall-exit {
+    display: none !important;
+    animation: none !important;
+  }
+  .digit-fall-enter {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Ice Glass Scanline / Sheen */
+.scanline-overlay {
+  background: linear-gradient(
+    rgba(255, 255, 255, 0) 50%, 
+    rgba(142, 184, 232, 0.08) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}

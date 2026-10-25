@@ -1,0 +1,189 @@
+MIC TECH-HACK 2K26 Dept. of AIML
+DVR & Dr. HS MIC College of Technology
+(Autonomous)
+Kanchikacherla, NTR District, A.P.
+MIC TECH-HACK 2K26
+A 5-Hour Hackathon
+Department of Artificial Intelligence & Machine Learning
+Problem solving using Machine Learning
+Problem Statements
+Convener: Dr. Bala Murali Krishna (Professor & Head)
+Faculty Coordinator: Sayyed Nagulmeera (Assistant Professor)
+Co-Coordinator: M. Chaitanya (Assistant Professor)
+Guidelines for Participants
+ Open to all students only.
+ Teams must choose one problem statement from the options below.
+ Solutions must use Machine Learning / AI techniques suitable for the chosen
+problem (NLP for PS-01; generative models for PS-02; recommendation for PS-03; data
+visualization for PS-04; educational NLP for PS-05).
+ Deliverables: working prototype / notebook, short demo, and brief explanation of
+approach.
+ E-certificates will be awarded to all participants.
+1
+
+-- 1 of 6 --
+
+MIC TECH-HACK 2K26 Dept. of AIML
+Problem Statement 1 - Personalized Daily News Digest
+PS-01 - End-of-Day Summarized News Email for Busy Users
+Persona: Consider a busy professional (for example, “Arjun”) who follows news
+across politics, technology, business, and sports, but has almost no time during the
+day to read full articles.
+Scenario: Arjun starts work at 9 AM. Throughout the day, dozens of news articles
+appear on his phone, but meetings, deadlines, and travel leave him no time to read.
+By 8 PM he wants one short email that covers everything important from the day,
+grouped by topic, easy to skim in under 5 minutes, so he can stay informed without
+opening twenty tabs.
+Background: Important updates arrive all day long. Reading every article is
+impractical. A single, well-organized summary at the end of the day would save time
+and still keep the user informed.
+Problem: Build an ML-based system that collects a day’s news articles (from a
+provided dataset or sample feed), groups related stories, and generates a clear end-of-
+day digest that could be delivered as an email newsletter.
+Expected Output:
+ Topic-wise or ranked summary of the day’s news
+ Short digest text suitable for an email body (subject line + sections)
+ Evaluation of summarization quality (e.g., ROUGE / human readability notes) or
+clustering quality
+ A simple demo: input day’s articles to output digest / mock email
+Suggested Techniques: Text summarization (extractive or abstractive), topic
+clustering, keyword extraction.
+Suggested Data: Public news datasets / RSS-style article collections / a curated
+sample of same-day articles.
+2
+
+-- 2 of 6 --
+
+MIC TECH-HACK 2K26 Dept. of AIML
+Problem Statement 2 - 1990s Photo Style Generator
+PS-02 - Build Your Own Retro Photo Generator
+Persona: Consider a student (for example, “Meera”) who loves the 1990s retro photo
+trend and wants to create vintage-style portraits and social media posts.
+Scenario: Meera tries to generate 1990s-style photos using ChatGPT or Gemini,
+but the free tier limits how many images she can create per day. She wants her own
+simple tool where she can enter a prompt and get retro photo-style images anytime,
+without depending on paid chat limits.
+Background: The 1990s photo look (film grain, soft flash, faded colors, old camera
+feel) is popular online. Many students use AI chat tools for this, but free plans run
+out quickly. A lightweight student-built generator can solve this problem.
+Problem: Build an ML / generative AI tool that takes a text prompt and generates
+images in a 1990s vintage photo style. The solution should be runnable by students
+on a normal laptop or free cloud notebook, without relying on ChatGPT/Gemini
+image limits.
+Expected Output:
+ Working demo: prompt in, 1990s-style image out
+ Sample prompts and generated retro photos
+ Short note on model used and how the vintage look was achieved
+ Simple comparison with one chat-tool output (optional)
+Suggested Techniques: Text-to-image diffusion models, prompt engineering for
+retro style, optional post-processing (grain, color fade, VHS-like effects).
+Suggested Tools / Models: Open lightweight image models suitable for students
+(local or notebook-based demo).
+3
+
+-- 3 of 6 --
+
+MIC TECH-HACK 2K26 Dept. of AIML
+Problem Statement 3 - Smart Product Purchase Advi-
+sor
+PS-03 - Survey-Based Best Product Suggestion Across Brands
+Persona: Consider a shopper (for example, “Rohan”) who wants to buy a product.
+Two or more options look good, but they are from different brands, and he cannot
+decide which one to buy.
+Scenario: Rohan pastes product links he is comparing (for example, two mobile
+phones from different brands). The system checks that all links belong to the same
+product category. If one link is a mobile and another is a car (or any mixed
+category), the system must reject the request and ask him to compare only matching
+products. When all links are valid and same-category, it auto-generates a survey for
+that category, scores the products from his answers and available comments, and
+suggests which one to buy with product links.
+Background: Brand comparison pages and star ratings are not enough. The “best”
+product depends on the user’s own requirements. First the category must match;
+then an auto-generated survey can capture needs, and an ML model can recommend
+what to buy.
+Problem: Build an ML-based purchase advisor that:
+1. Accepts two or more product links from the user
+2. Detects each product’s category and allows comparison only if all links are
+the same category (mobiles with mobiles, cars with cars, etc.). Mixed categories
+must not proceed
+3. Auto-generates a short survey based on that detected product category
+4. Uses survey answers plus available comments/reviews to recommend the best
+product, with reasons and links
+Expected Output:
+ Category check: same-category links accepted; mixed-category links blocked with
+a clear message
+ Auto-generated survey questions for the detected category
+ Ranking / recommendation of the best product based on survey answers
+ Short explanation why that product fits the user, plus product links from available
+comments / listing data
+Suggested Techniques: Category classification from product title/link/metadata,
+survey question generation, multi-criteria ranking, review / comment sentiment
+analysis.
+Suggested Data: Sample product listings with category, brand, price, features,
+comments/reviews, and links (public e-commerce style datasets or curated demo
+data).
+4
+
+-- 4 of 6 --
+
+MIC TECH-HACK 2K26 Dept. of AIML
+Problem Statement 4 - Auto Analytics Report from
+Spreadsheet Data
+PS-04 - Suggest Visualizations and Generate PDF Report
+Persona: Consider a user (for example, “Kavya”) who has data in a CSV or Excel
+file and wants charts and insights, but she is new to data visualization and does not
+know which graphs to choose.
+Scenario: Kavya uploads a CSV or Excel file (sales, student marks, survey results,
+etc.). The system reads the columns, suggests suitable visualizations (bar, line, pie,
+scatter, heatmap, and so on), builds those charts automatically, and generates a clean
+PDF analytics report she can download and share.
+Background: Tools like Excel and BI software need manual chart setup. Beginners
+often pick the wrong chart or miss insights. An assisted pipeline can recommend
+visuals from the data types and produce a ready PDF report.
+Problem: Build an ML / data analysis tool that (1) accepts a CSV or Excel upload,
+(2) profiles columns and suggests useful visualizations, (3) creates those charts, and
+(4) exports a PDF analytics report with charts plus short written insights.
+Expected Output:
+ Working demo: upload CSV/Excel to chart suggestions to generated visuals
+ Auto-generated PDF analytics report with charts and brief insights
+ Short note on how chart types were chosen from the data
+ Sample run on at least one demo dataset
+Suggested Techniques: Data profiling, rule-based or ML chart recommendation,
+automated plotting, PDF report generation, optional simple insight text (trends, top
+categories, outliers).
+Suggested Data: Public CSV/Excel sample datasets (sales, education, health, or
+any clean tabular file for demo).
+5
+
+-- 5 of 6 --
+
+MIC TECH-HACK 2K26 Dept. of AIML
+Problem Statement 5 - YouTube Study Companion
+PS-05 - Captions to Summary, Flashcards, and Quiz
+Persona: Consider a learner (for example, “Ananya”) who studies from YouTube
+lectures and tutorials, but often forgets key points and wants better exam-style
+preparation.
+Scenario: Ananya copies and pastes a YouTube video link. The system fetches the
+video captions/transcript, summarizes the content, helps her understand the main
+ideas, and then builds flashcards and a quiz so she can revise and test herself.
+Background: Watching a long video once is not enough for strong learning. Cap-
+tions plus summarization, flashcards, and quizzes turn passive watching into active
+preparation.
+Problem: Build an ML / NLP tool that (1) accepts a YouTube URL (or pasted
+captions for demo), (2) extracts captions/transcript, (3) generates a clear summary
+of the video, and (4) creates flashcards and a quiz to improve preparation.
+Expected Output:
+ Working demo: YouTube link or captions in, study materials out
+ Video summary (key points / sections)
+ Auto-generated flashcards from the content
+ Auto-generated quiz (MCQ or short answers) for practice
+Suggested Techniques: Caption/transcript extraction, text summarization, ques-
+tion generation, key-concept extraction for flashcards.
+Suggested Data / Demo note: Public caption APIs or a sample transcript file if
+live YouTube fetch is limited during the hackathon.
+MIC TECH-HACK 2K26 - Department of AIML
+“Problem solving using Machine Learning.”
+6
+
+-- 6 of 6 --
+
