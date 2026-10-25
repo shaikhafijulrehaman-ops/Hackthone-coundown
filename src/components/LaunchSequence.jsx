@@ -1,31 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { HACKATHON_CONFIG } from '../data/hackathonData';
 import { sound } from '../utils/audio';
 import { Cpu, Award, Users, Calendar, Clock, MapPin, Zap, ShieldCheck } from 'lucide-react';
 
 /**
  * LaunchSequence:
- * Advanced Controlled-Pacing Cinematic Launch Sequence in Ice Glass Theme:
+ * Coordinated Cinematic Launch Sequence in Ice Glass Theme:
  *
- * Pre-Countdown Introduction (Each slide visible for approximately 4.0s):
- * Slide 1 (Stage 1): System Initialization (0.0s – 4.0s)
- *          "INITIALIZING HACKATHON SYSTEM" with subtle futuristic activation audio
- * Slide 2 (Stage 2): Event Identity (4.0s – 8.0s)
- *          "MIC TECH-HACK 2K26", "A 5-HOUR HACKATHON"
- * Slide 3 (Stage 3): All 3 Officials Together (8.0s – 12.0s)
- *          Convener, Faculty Coord, Co-Coord simultaneously in balanced glass cards
- * Slide 4 (Stage 4): Event Details Together (12.0s – 16.0s)
- *          Date, Time, Duration, Venue, Department in coordinated layout
- * Slide 5 (Stage 5): Circular College Logo Reveal (16.0s – 20.0s)
- *          3D Y-axis spinning medallion with official transparent logo & chime
+ * 1. Single Continuous Cinematic Soundtrack:
+ *    - Starts ONCE at t = 0.0s when BEGIN HACKATHON is clicked.
+ *    - Plays continuously across all 5 introduction slides, countdown 3-2-1, and announcement.
+ *    - Never restarts on slide transitions or countdown changes.
+ *    - Smoothly fades out over 2.0s after "HACKATHON BEGINS NOW".
  *
- * Live Launch Countdown (Exactly 9.0s: 3.0s for 3, 3.0s for 2, 3.0s for 1):
- * Stage 6: Countdown Sequence (20.0s – 29.0s)
- *          Background music begins; single medallion flips logo to numbers 3, 2, 1
- *
- * Grand Announcement:
- * Stage 7: "HACKATHON BEGINS NOW" (29.0s – 31.6s)
- *          Sub-bass swell, smooth music fade-out, transitions to live 5-hour event
+ * 2. Distinct Single-Shot Sound Accents (Tracked by ref to prevent re-triggering):
+ *    - Slide 1: System Activation sound (t = 0.0s)
+ *    - Slide 2, 3, 4: Restrained slide entrance transitions (t = 4.0s, 8.0s, 12.0s)
+ *    - Slide 5: College Logo Reveal chime (t = 16.0s)
+ *    - Countdown 3: Restrained cinematic pulse (t = 20.0s)
+ *    - Countdown 2: Stronger cinematic pulse (t = 23.0s)
+ *    - Countdown 1: Strongest accent with rising tension (t = 26.0s)
+ *    - Announcement: Distinctive cinematic impact at "HACKATHON BEGINS NOW" (t = 29.0s)
  */
 export default function LaunchSequence({ onComplete }) {
   const [stage, setStage] = useState(1);
@@ -33,58 +28,74 @@ export default function LaunchSequence({ onComplete }) {
   const [countdownProgress, setCountdownProgress] = useState(1); // 1 to 0 for circular progress
   const [isFadingOut, setIsFadingOut] = useState(false);
 
-  useEffect(() => {
-    // Slide 1: System Initialization (0.0s – 4.0s)
-    sound.playLaunchActivation();
+  // Sound guard ref: ensures each sound accent plays strictly ONCE
+  const playedSoundsRef = useRef(new Set());
 
-    // Slide 2: Event Identity (4.0s – 8.0s, exactly 4.0s hold)
+  const triggerSoundOnce = (key, soundFn) => {
+    if (!playedSoundsRef.current.has(key)) {
+      playedSoundsRef.current.add(key);
+      try { soundFn(); } catch (e) { console.warn('Sound trigger error:', e); }
+    }
+  };
+
+  useEffect(() => {
+    // 1. Start continuous cinematic soundtrack once at the very beginning
+    sound.startLaunchMusic();
+
+    // Slide 1: System Initialization (0.0s – 4.0s)
+    triggerSoundOnce('sfx-activation', () => sound.playActivation());
+
+    // Slide 2: Event Identity (4.0s – 8.0s)
     const tStage2 = setTimeout(() => {
       setStage(2);
-      sound.playSlideWhoosh();
+      triggerSoundOnce('sfx-slide-2', () => sound.playTransition());
     }, 4000);
 
-    // Slide 3: All 3 Officials Together (8.0s – 12.0s, exactly 4.0s hold)
+    // Slide 3: All 3 Officials Together (8.0s – 12.0s)
     const tStage3 = setTimeout(() => {
       setStage(3);
-      sound.playSlideWhoosh();
+      triggerSoundOnce('sfx-slide-3', () => sound.playTransition());
     }, 8000);
 
-    // Slide 4: Event Details Together (12.0s – 16.0s, exactly 4.0s hold)
+    // Slide 4: Event Details Together (12.0s – 16.0s)
     const tStage4 = setTimeout(() => {
       setStage(4);
-      sound.playSlideWhoosh();
+      triggerSoundOnce('sfx-slide-4', () => sound.playTransition());
     }, 12000);
 
-    // Slide 5: Circular College Logo Reveal (16.0s – 20.0s, exactly 4.0s hold)
+    // Slide 5: Circular College Logo Reveal (16.0s – 20.0s)
     const tStage5 = setTimeout(() => {
       setStage(5);
-      sound.playLogoReveal();
+      triggerSoundOnce('sfx-logo', () => sound.playLogoReveal());
     }, 16000);
 
-    // Stage 6: Exact 3-Second Numerical Countdown (20.0s – 29.0s, exactly 9.0s: 3.0s for 3, 3.0s for 2, 3.0s for 1)
-    // Background music begins synchronously with the countdown start
+    // Stage 6: Final Launch Countdown (20.0s – 29.0s)
+    // Continuous background music keeps playing uninterrupted across 3, 2, and 1
     const tStage6_3 = setTimeout(() => {
       setStage(6);
       setCountdownNum(3);
-      sound.startCountdownMusic();
+      triggerSoundOnce('sfx-cnt-3', () => sound.playCountdownAccent(3));
     }, 20000);
 
     const tStage6_2 = setTimeout(() => {
       setCountdownNum(2);
+      triggerSoundOnce('sfx-cnt-2', () => sound.playCountdownAccent(2));
     }, 23000);
 
     const tStage6_1 = setTimeout(() => {
       setCountdownNum(1);
+      triggerSoundOnce('sfx-cnt-1', () => sound.playCountdownAccent(1));
     }, 26000);
 
     // Stage 7: Grand Begin Announcement (29.0s – 31.6s)
     const tStage7 = setTimeout(() => {
       setStage(7);
-      sound.playFinalTransition();
-      sound.stopCountdownMusic(1.5);
+      triggerSoundOnce('sfx-impact', () => sound.playLaunchImpact());
+      // Smoothly fade out the continuous soundtrack over 2.0s
+      sound.stopLaunchMusic(2.0);
     }, 29000);
 
-    // Fade out and transition smoothly to live hackathon event at 31.6s
+    // Fade out visual sequence and transition into live 5-hour hackathon
     const tFade = setTimeout(() => {
       setIsFadingOut(true);
     }, 31200);
@@ -104,7 +115,7 @@ export default function LaunchSequence({ onComplete }) {
       clearTimeout(tStage7);
       clearTimeout(tFade);
       clearTimeout(tComplete);
-      sound.stopCountdownMusic(0.2);
+      sound.stopLaunchMusic(0.2);
     };
   }, [onComplete]);
 

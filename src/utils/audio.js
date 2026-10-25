@@ -1,6 +1,5 @@
-// Web Audio API Synthesizer & Cinematic Asset Player for MIC TECH-HACK 2K26
-// Conforms to browser autoplay policies (initialized on explicit click)
-// Supports preloaded local audio assets from /audio/*.wav with real-time procedural synthesis fallback
+// Web Audio API Synthesizer & Cinematic Audio Controller for MIC TECH-HACK 2K26
+// Coordinates a single continuous cinematic music track with distinct, non-repetitive sound accents
 
 class SoundSystem {
   constructor() {
@@ -9,31 +8,40 @@ class SoundSystem {
     this.buffers = {};
     this.loadingPromises = {};
     this.activeSources = new Set();
-    this.musicSource = null;
-    this.musicGainNode = null;
+    
+    // Continuous launch soundtrack source & gain
+    this.launchMusicSource = null;
+    this.launchMusicGainNode = null;
+    this.isMusicPlaying = false;
+
+    // Master & SFX gain nodes
     this.masterGainNode = null;
     this.sfxGainNode = null;
-    this.isInitialized = false;
 
-    // Default comfortable volume balance
+    // Professional balanced audio targets per specification:
+    // Background music: ~20–30% volume
+    // Transition effects: ~20–35% volume
+    // Final announcement impact: ~30–40% volume
     this.masterVolume = 1.0;
-    this.musicVolume = 0.28; // 28% (within 20–35% specification)
-    this.sfxVolume = 0.35;   // 35% (within 25–40% specification)
+    this.musicVolume = 0.25;  // 25% continuous soundtrack level
+    this.sfxVolume = 0.30;    // 30% sound effects level
 
-    // Preload audio files if running in browser
     if (typeof window !== 'undefined') {
       this.preloadAudioAssets();
     }
   }
 
-  // Preload local assets from /audio/*.wav
+  // Preload local assets from /audio/*.wav and /audio/*.mp3
   preloadAudioAssets() {
     const assets = {
-      'launch-activation': '/audio/launch-activation.wav',
-      'slide-whoosh': '/audio/slide-whoosh.wav',
-      'logo-reveal': '/audio/logo-reveal.wav',
-      'countdown-music': '/audio/countdown-music.wav',
-      'final-transition': '/audio/final-transition.wav',
+      'launch-music': '/audio/launch-music.wav',
+      'sfx-activation': '/audio/sfx-activation.wav',
+      'sfx-transition': '/audio/sfx-transition.wav',
+      'sfx-logo-reveal': '/audio/sfx-logo-reveal.wav',
+      'sfx-countdown-3': '/audio/sfx-countdown-3.wav',
+      'sfx-countdown-2': '/audio/sfx-countdown-2.wav',
+      'sfx-countdown-1': '/audio/sfx-countdown-1.wav',
+      'sfx-launch-impact': '/audio/sfx-launch-impact.wav',
     };
 
     Object.entries(assets).forEach(([name, url]) => {
@@ -43,13 +51,13 @@ class SoundSystem {
           return res.arrayBuffer();
         })
         .catch(err => {
-          console.warn(`[Audio] Asset /audio/${name}.wav load failed, using procedural fallback:`, err.message);
+          console.warn(`[Audio] Asset ${url} failed to load, procedural fallback active:`, err.message);
           return null;
         });
     });
   }
 
-  // Initialize Web Audio Context on explicit user gesture (e.g. BEGIN HACKATHON click)
+  // Initialize Web Audio Context on explicit user gesture (BEGIN HACKATHON click)
   init() {
     try {
       if (!this.ctx) {
@@ -71,12 +79,12 @@ class SoundSystem {
         this.sfxGainNode.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
         this.sfxGainNode.connect(this.masterGainNode);
 
-        this.musicGainNode = this.ctx.createGain();
-        this.musicGainNode.gain.setValueAtTime(this.musicVolume, this.ctx.currentTime);
-        this.musicGainNode.connect(this.masterGainNode);
+        this.launchMusicGainNode = this.ctx.createGain();
+        this.launchMusicGainNode.gain.setValueAtTime(this.musicVolume, this.ctx.currentTime);
+        this.launchMusicGainNode.connect(this.masterGainNode);
       }
 
-      // Decode preloaded array buffers into Web Audio AudioBuffers
+      // Decode preloaded buffers into Web Audio AudioBuffers
       Object.entries(this.loadingPromises).forEach(([name, promise]) => {
         if (promise && !this.buffers[name]) {
           promise.then(arrayBuffer => {
@@ -90,19 +98,16 @@ class SoundSystem {
           });
         }
       });
-
-      this.isInitialized = true;
     } catch (e) {
-      console.warn('[Audio] Context init warning:', e);
+      console.warn('[Audio] Init exception handled:', e);
     }
   }
 
-  // Toggle or set mute state
   setMuted(isMuted) {
     this.muted = !!isMuted;
     if (this.masterGainNode && this.ctx) {
-      const targetGain = this.muted ? 0 : this.masterVolume;
-      this.masterGainNode.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.05);
+      const target = this.muted ? 0 : this.masterVolume;
+      this.masterGainNode.gain.setTargetAtTime(target, this.ctx.currentTime, 0.05);
     }
   }
 
@@ -111,7 +116,7 @@ class SoundSystem {
   }
 
   // Helper to play an AudioBuffer or fall back to procedural synthesizer
-  playBufferOrFallback(name, fallbackFn, isMusic = false) {
+  playBuffer(name, gainNode, fallbackFn) {
     if (this.muted) return null;
     this.init();
     if (!this.ctx) return null;
@@ -121,210 +126,234 @@ class SoundSystem {
       try {
         const source = this.ctx.createBufferSource();
         source.buffer = buffer;
-        const targetGain = isMusic ? this.musicGainNode : this.sfxGainNode;
-        source.connect(targetGain || this.ctx.destination);
+        source.connect(gainNode || this.sfxGainNode || this.ctx.destination);
         source.start();
 
         this.activeSources.add(source);
         source.onended = () => {
           this.activeSources.delete(source);
         };
-
-        if (isMusic) {
-          this.musicSource = source;
-        }
-
         return source;
       } catch (err) {
-        console.warn(`[Audio] Buffer playback error for ${name}, executing fallback:`, err);
+        console.warn(`[Audio] Buffer error for ${name}:`, err);
       }
     }
 
-    // Procedural synthesis fallback
     if (typeof fallbackFn === 'function') {
       return fallbackFn.call(this);
     }
-
     return null;
   }
 
-  // 1. Launch Activation: Futuristic subtle startup activation
-  playLaunchActivation() {
-    return this.playBufferOrFallback('launch-activation', () => {
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.exponentialRampToValueAtTime(440, now + 0.6);
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.35, now + 0.15);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
-
-      osc.connect(gain);
-      gain.connect(this.sfxGainNode || this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 1.9);
-    });
-  }
-
-  // 2. Slide Whoosh: Smooth electronic slide entrance whoosh
-  playSlideWhoosh() {
-    return this.playBufferOrFallback('slide-whoosh', () => {
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.exponentialRampToValueAtTime(750, now + 0.25);
-      osc.frequency.exponentialRampToValueAtTime(300, now + 0.6);
-
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.25, now + 0.15);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
-
-      osc.connect(gain);
-      gain.connect(this.sfxGainNode || this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.7);
-    });
-  }
-
-  // 3. Logo Reveal: Gentle cinematic crystal chime & resonant harmonics
-  playLogoReveal() {
-    return this.playBufferOrFallback('logo-reveal', () => {
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const freqs = [659.25, 830.61, 987.77, 1318.51]; // E5, G#5, B5, E6
-
-      freqs.forEach((f, idx) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        const tStart = now + idx * 0.12;
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(f, tStart);
-
-        gain.gain.setValueAtTime(0, tStart);
-        gain.gain.linearRampToValueAtTime(0.25 / freqs.length, tStart + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, tStart + 1.8);
-
-        osc.connect(gain);
-        gain.connect(this.sfxGainNode || this.ctx.destination);
-
-        osc.start(tStart);
-        osc.stop(tStart + 2.0);
-      });
-    });
-  }
-
-  // 4. Countdown Music: Premium cinematic electronic instrumental track
-  startCountdownMusic() {
-    if (this.musicSource) {
-      try { this.musicSource.stop(); } catch {}
-      this.musicSource = null;
-    }
-
-    if (this.musicGainNode && this.ctx) {
-      this.musicGainNode.gain.cancelScheduledValues(this.ctx.currentTime);
-      this.musicGainNode.gain.setValueAtTime(0, this.ctx.currentTime);
-      this.musicGainNode.gain.linearRampToValueAtTime(this.musicVolume, this.ctx.currentTime + 0.6);
-    }
-
-    return this.playBufferOrFallback('countdown-music', () => {
-      // Procedural pulsating synth pad fallback
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(146.83, now); // D3 warm pad
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.20, now + 0.8);
-
-      osc.connect(gain);
-      gain.connect(this.musicGainNode || this.ctx.destination);
-
-      osc.start(now);
-      this.musicSource = osc;
-    }, true);
-  }
-
-  // Stop countdown music with smooth fade-out
-  stopCountdownMusic(fadeDuration = 1.0) {
+  // ========================================================
+  // 1. CONTINUOUS CINEMATIC MUSIC TRACK
+  // Starts ONCE when BEGIN HACKATHON is clicked.
+  // Plays continuously through all slides, logo, and countdown.
+  // ========================================================
+  startLaunchMusic() {
+    if (this.isMusicPlaying) return; // Prevent duplicate playback
+    this.init();
     if (!this.ctx) return;
-    if (this.musicGainNode) {
+
+    this.isMusicPlaying = true;
+    const now = this.ctx.currentTime;
+
+    if (this.launchMusicGainNode) {
+      this.launchMusicGainNode.gain.cancelScheduledValues(now);
+      this.launchMusicGainNode.gain.setValueAtTime(0, now);
+      // Gentle 1.5s fade-in at the beginning
+      this.launchMusicGainNode.gain.linearRampToValueAtTime(this.musicVolume, now + 1.5);
+    }
+
+    const source = this.playBuffer('launch-music', this.launchMusicGainNode, () => {
+      // Procedural fallback continuous pad
+      const osc = this.ctx.createOscillator();
+      const padGain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(146.83, now); // D3
+      padGain.gain.setValueAtTime(0, now);
+      padGain.gain.linearRampToValueAtTime(0.20, now + 1.5);
+      osc.connect(padGain);
+      padGain.connect(this.launchMusicGainNode);
+      osc.start(now);
+      return osc;
+    });
+
+    this.launchMusicSource = source;
+  }
+
+  // Smoothly fade out the continuous soundtrack after HACKATHON BEGINS NOW
+  stopLaunchMusic(fadeDuration = 2.0) {
+    if (!this.isMusicPlaying) return;
+    this.isMusicPlaying = false;
+
+    if (this.ctx && this.launchMusicGainNode) {
       const now = this.ctx.currentTime;
-      this.musicGainNode.gain.cancelScheduledValues(now);
-      this.musicGainNode.gain.setValueAtTime(this.musicGainNode.gain.value, now);
-      this.musicGainNode.gain.linearRampToValueAtTime(0, now + fadeDuration);
+      this.launchMusicGainNode.gain.cancelScheduledValues(now);
+      this.launchMusicGainNode.gain.setValueAtTime(this.launchMusicGainNode.gain.value, now);
+      this.launchMusicGainNode.gain.linearRampToValueAtTime(0, now + fadeDuration);
     }
 
     setTimeout(() => {
-      if (this.musicSource) {
-        try { this.musicSource.stop(); } catch {}
-        this.musicSource = null;
+      if (this.launchMusicSource) {
+        try { this.launchMusicSource.stop(); } catch {}
+        this.launchMusicSource = null;
       }
     }, (fadeDuration + 0.1) * 1000);
   }
 
-  // 5. Final Transition: Sub swell & crystal impact release
-  playFinalTransition() {
-    return this.playBufferOrFallback('final-transition', () => {
+  // ========================================================
+  // 2. DISTINCT SOUND EFFECTS (Triggered once per visual event)
+  // ========================================================
+
+  // Slide 1: System Activation (plays once at t = 0)
+  playActivation() {
+    return this.playBuffer('sfx-activation', this.sfxGainNode, () => {
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(80, now);
-      osc.frequency.exponentialRampToValueAtTime(220, now + 1.0);
-
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(440, now + 0.6);
       gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.35, now + 0.5);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
-
+      gain.gain.linearRampToValueAtTime(0.25, now + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
       osc.connect(gain);
       gain.connect(this.sfxGainNode || this.ctx.destination);
-
       osc.start(now);
-      osc.stop(now + 2.6);
+      osc.stop(now + 1.6);
     });
   }
 
-  // Safe Warning Alert (30m / 5m thresholds)
+  // Slide 2, 3, 4: Major Slide Transition (plays once per slide entrance)
+  playTransition() {
+    return this.playBuffer('sfx-transition', this.sfxGainNode, () => {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+      osc.frequency.exponentialRampToValueAtTime(260, now + 0.5);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.20, now + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode || this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.6);
+    });
+  }
+
+  // Slide 5: College Logo Reveal Chime (plays once at t = 16s)
+  playLogoReveal() {
+    return this.playBuffer('sfx-logo-reveal', this.sfxGainNode, () => {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      [659.25, 830.61, 987.77, 1318.51].forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const tStart = now + idx * 0.1;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, tStart);
+        gain.gain.setValueAtTime(0, tStart);
+        gain.gain.linearRampToValueAtTime(0.08, tStart + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, tStart + 1.6);
+        osc.connect(gain);
+        gain.connect(this.sfxGainNode || this.ctx.destination);
+        osc.start(tStart);
+        osc.stop(tStart + 1.7);
+      });
+    });
+  }
+
+  // Countdown Accents:
+  // When number 3 appears: one restrained cinematic pulse
+  // When number 2 appears: a stronger pulse
+  // When number 1 appears: the strongest countdown accent with rising tension
+  playCountdownAccent(number) {
+    const assetName = `sfx-countdown-${number}`;
+    return this.playBuffer(assetName, this.sfxGainNode, () => {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      const baseFreq = number === 3 ? 55 : number === 2 ? 65 : 80;
+      const vol = number === 3 ? 0.25 : number === 2 ? 0.32 : 0.40;
+      osc.frequency.setValueAtTime(baseFreq + 30, now);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.3);
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + (number === 1 ? 1.4 : 0.9));
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode || this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + (number === 1 ? 1.5 : 1.0));
+    });
+  }
+
+  // Stage 7: Distinctive Cinematic Impact at "HACKATHON BEGINS NOW" (plays once at t = 29s)
+  playLaunchImpact() {
+    return this.playBuffer('sfx-launch-impact', this.sfxGainNode, () => {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(110, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.8);
+      gain.gain.setValueAtTime(0.38, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode || this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 2.5);
+    });
+  }
+
+  // ========================================================
+  // Backward compatibility & Normal Event Mode Handlers
+  // ========================================================
+  playLaunchActivation() {
+    return this.playActivation();
+  }
+
+  playSlideWhoosh() {
+    return this.playTransition();
+  }
+
+  startCountdownMusic() {
+    // Music is already continuously playing through the countdown!
+  }
+
+  stopCountdownMusic(fadeDuration = 1.5) {
+    this.stopLaunchMusic(fadeDuration);
+  }
+
+  playFinalTransition() {
+    return this.playLaunchImpact();
+  }
+
   playWarningAlert(level = 'amber') {
     if (this.muted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-
       osc.type = 'sine';
       osc.frequency.setValueAtTime(level === 'red' ? 880 : 587.33, now);
-      osc.frequency.exponentialRampToValueAtTime(level === 'red' ? 660 : 440, now + 0.4);
-
+      osc.frequency.exponentialRampToValueAtTime(level === 'red' ? 660 : 440, now + 0.35);
       gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
       osc.connect(gain);
       gain.connect(this.sfxGainNode || this.ctx.destination);
-
       osc.start(now);
-      osc.stop(now + 0.7);
+      osc.stop(now + 0.65);
     } catch {}
   }
 
-  // Safe Completion celebration sound
   playCompletionSound() {
     if (this.muted || !this.ctx) return;
     try {
@@ -333,15 +362,12 @@ class SoundSystem {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         const tStart = now + idx * 0.15;
-
         osc.type = 'sine';
         osc.frequency.setValueAtTime(f, tStart);
         gain.gain.setValueAtTime(0.15, tStart);
         gain.gain.exponentialRampToValueAtTime(0.001, tStart + 1.2);
-
         osc.connect(gain);
         gain.connect(this.sfxGainNode || this.ctx.destination);
-
         osc.start(tStart);
         osc.stop(tStart + 1.3);
       });
