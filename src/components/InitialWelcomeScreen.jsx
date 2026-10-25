@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MovingGradientButton from './MovingGradientButton';
 import { HACKATHON_CONFIG } from '../data/hackathonData';
+import { sound } from '../utils/audio';
 import { Cpu, Calendar, Clock, MapPin } from 'lucide-react';
 
 export default function InitialWelcomeScreen({ onBegin }) {
@@ -9,6 +10,7 @@ export default function InitialWelcomeScreen({ onBegin }) {
   const handleBeginClick = () => {
     if (isClicked) return;
     setIsClicked(true);
+    sound.init();
     onBegin();
   };
 

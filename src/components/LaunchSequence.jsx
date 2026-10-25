@@ -1,90 +1,99 @@
 import React, { useState, useEffect } from 'react';
 import { HACKATHON_CONFIG } from '../data/hackathonData';
+import { sound } from '../utils/audio';
 import { Cpu, Award, Users, Calendar, Clock, MapPin, Zap, ShieldCheck } from 'lucide-react';
 
 /**
  * LaunchSequence:
- * Advanced Controlled-Pacing Cinematic Launch Sequence (~28.0s total) in Ice Glass Theme:
+ * Advanced Controlled-Pacing Cinematic Launch Sequence in Ice Glass Theme:
  *
- * Stage 1: Digital Activation (0.0s – 2.0s)
- *          "INITIALIZING HACKATHON SYSTEM" -> "MIC TECH-HACK 2K26"
- * Stage 2: Event Identity (2.0s – 5.0s)
- *          "MIC TECH-HACK 2K26", "A 5-HOUR HACKATHON", Dept of AI & ML
- * Stage 3: All 3 Officials Together (5.0s – 9.0s)
- *          "MEET THE ORGANIZERS" with Convener, Faculty Coord, Co-Coord simultaneously
- * Stage 4: Event Details Together (9.0s – 13.0s)
- *          Date, Time, Duration, Venue, Department together in balanced translucent layout
- * Stage 5: Circular College Logo Reveal (13.0s – 16.0s)
- *          EXACTLY 3.0s duration! 3D Y-axis spinning medallion with official transparent logo
- * Stage 6: Exact 3-Second Numerical Countdown (16.0s – 25.0s)
- *          EXACTLY 9.0s total: 3.0s for '3', 3.0s for '2', 3.0s for '1'
- * Stage 7: Grand Announcement (25.0s – 28.0s)
- *          "MIC TECH-HACK 2K26" -> "HACKATHON BEGINS NOW" + energy ring
- * At 28.0s -> onComplete() transitions directly to the live event display.
+ * Pre-Countdown Introduction (Each slide visible for approximately 4.0s):
+ * Slide 1 (Stage 1): System Initialization (0.0s – 4.0s)
+ *          "INITIALIZING HACKATHON SYSTEM" with subtle futuristic activation audio
+ * Slide 2 (Stage 2): Event Identity (4.0s – 8.0s)
+ *          "MIC TECH-HACK 2K26", "A 5-HOUR HACKATHON"
+ * Slide 3 (Stage 3): All 3 Officials Together (8.0s – 12.0s)
+ *          Convener, Faculty Coord, Co-Coord simultaneously in balanced glass cards
+ * Slide 4 (Stage 4): Event Details Together (12.0s – 16.0s)
+ *          Date, Time, Duration, Venue, Department in coordinated layout
+ * Slide 5 (Stage 5): Circular College Logo Reveal (16.0s – 20.0s)
+ *          3D Y-axis spinning medallion with official transparent logo & chime
+ *
+ * Live Launch Countdown (Exactly 9.0s: 3.0s for 3, 3.0s for 2, 3.0s for 1):
+ * Stage 6: Countdown Sequence (20.0s – 29.0s)
+ *          Background music begins; single medallion flips logo to numbers 3, 2, 1
+ *
+ * Grand Announcement:
+ * Stage 7: "HACKATHON BEGINS NOW" (29.0s – 31.6s)
+ *          Sub-bass swell, smooth music fade-out, transitions to live 5-hour event
  */
 export default function LaunchSequence({ onComplete }) {
   const [stage, setStage] = useState(1);
-  const [stage1Title, setStage1Title] = useState('INITIALIZING HACKATHON SYSTEM');
   const [countdownNum, setCountdownNum] = useState(3);
   const [countdownProgress, setCountdownProgress] = useState(1); // 1 to 0 for circular progress
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
-    // Stage 1: Digital Activation (0.0s – 1.6s)
-    const tStage1Text = setTimeout(() => {
-      setStage1Title('MIC TECH-HACK 2K26');
-    }, 800);
+    // Slide 1: System Initialization (0.0s – 4.0s)
+    sound.playLaunchActivation();
 
-    // Stage 2: Event Identity (1.6s – 3.6s, ~2.0s hold)
+    // Slide 2: Event Identity (4.0s – 8.0s, exactly 4.0s hold)
     const tStage2 = setTimeout(() => {
       setStage(2);
-    }, 1600);
+      sound.playSlideWhoosh();
+    }, 4000);
 
-    // Stage 3: All 3 Officials Together (3.6s – 5.8s, ~2.2s readable hold)
+    // Slide 3: All 3 Officials Together (8.0s – 12.0s, exactly 4.0s hold)
     const tStage3 = setTimeout(() => {
       setStage(3);
-    }, 3600);
-
-    // Stage 4: Event Details Together (5.8s – 8.0s, ~2.2s readable hold)
-    const tStage4 = setTimeout(() => {
-      setStage(4);
-    }, 5800);
-
-    // Stage 5: Circular College Logo Reveal (8.0s – 10.2s, ~2.2s hold)
-    const tStage5 = setTimeout(() => {
-      setStage(5);
+      sound.playSlideWhoosh();
     }, 8000);
 
-    // Stage 6: Exact 3-Second Numerical Countdown (10.2s – 19.2s, exactly 9.0s total: 3.0s for 3, 3.0s for 2, 3.0s for 1)
+    // Slide 4: Event Details Together (12.0s – 16.0s, exactly 4.0s hold)
+    const tStage4 = setTimeout(() => {
+      setStage(4);
+      sound.playSlideWhoosh();
+    }, 12000);
+
+    // Slide 5: Circular College Logo Reveal (16.0s – 20.0s, exactly 4.0s hold)
+    const tStage5 = setTimeout(() => {
+      setStage(5);
+      sound.playLogoReveal();
+    }, 16000);
+
+    // Stage 6: Exact 3-Second Numerical Countdown (20.0s – 29.0s, exactly 9.0s: 3.0s for 3, 3.0s for 2, 3.0s for 1)
+    // Background music begins synchronously with the countdown start
     const tStage6_3 = setTimeout(() => {
       setStage(6);
       setCountdownNum(3);
-    }, 10200);
+      sound.startCountdownMusic();
+    }, 20000);
 
     const tStage6_2 = setTimeout(() => {
       setCountdownNum(2);
-    }, 13200);
+    }, 23000);
 
     const tStage6_1 = setTimeout(() => {
       setCountdownNum(1);
-    }, 16200);
+    }, 26000);
 
-    // Stage 7: Grand Begin Announcement (19.2s – 21.8s, ~2.6s)
+    // Stage 7: Grand Begin Announcement (29.0s – 31.6s)
     const tStage7 = setTimeout(() => {
       setStage(7);
-    }, 19200);
+      sound.playFinalTransition();
+      sound.stopCountdownMusic(1.5);
+    }, 29000);
 
-    // Fade out and complete at 21.8s
+    // Fade out and transition smoothly to live hackathon event at 31.6s
     const tFade = setTimeout(() => {
       setIsFadingOut(true);
-    }, 21400);
+    }, 31200);
 
     const tComplete = setTimeout(() => {
       onComplete();
-    }, 21800);
+    }, 31600);
 
     return () => {
-      clearTimeout(tStage1Text);
       clearTimeout(tStage2);
       clearTimeout(tStage3);
       clearTimeout(tStage4);
@@ -95,6 +104,7 @@ export default function LaunchSequence({ onComplete }) {
       clearTimeout(tStage7);
       clearTimeout(tFade);
       clearTimeout(tComplete);
+      sound.stopCountdownMusic(0.2);
     };
   }, [onComplete]);
 
@@ -147,7 +157,7 @@ export default function LaunchSequence({ onComplete }) {
           </h2>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-orbitron font-extrabold text-iceText tracking-wider drop-shadow-sm">
-            {stage1Title}
+            INITIALIZING HACKATHON SYSTEM
           </h1>
 
           {/* Animated Circuit Progress Line */}

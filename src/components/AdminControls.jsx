@@ -123,12 +123,26 @@ export default function AdminControls({
                 Operator Console
               </h4>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg hover:bg-iceSurface text-iceTextSecondary hover:text-iceText transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={onToggleSound}
+                className={`px-2.5 py-1 rounded-lg border text-xs font-rajdhani font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  soundMuted
+                    ? 'bg-rose-500/15 border-rose-400 text-rose-700'
+                    : 'bg-iceSurface border-iceAccent/40 text-icePrimary hover:bg-icePrimary/15'
+                }`}
+                title="Toggle Audio Mute (M)"
+              >
+                {soundMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                <span>{soundMuted ? 'MUTED' : 'AUDIO ON'}</span>
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1 rounded-lg hover:bg-iceSurface text-iceTextSecondary hover:text-iceText transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Primary State Actions */}
